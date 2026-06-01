@@ -16,6 +16,7 @@ using Microsoft.Extensions.Options;
 using System.Globalization;
 using EventBookingSystem.BackgroundJobs;
 using EventBookingSystem.Hubs;
+using EventBookingSystem.Extensions;
 
 namespace EventBookingSystem
 {
@@ -95,7 +96,11 @@ namespace EventBookingSystem
             builder.Services.AddScoped<IEventHandler<BookingConfirmedEvent>, BookingConfirmationNotificationHandler>();
             builder.Services.AddScoped<IEventDispatcher, EventDispatcher>();
 
+
             var app = builder.Build();
+
+            //apply migration and seed events table
+            await app.Services.ApplyMigrationAndSeedAsync();
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())

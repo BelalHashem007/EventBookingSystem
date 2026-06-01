@@ -1,0 +1,52 @@
+# services
+services:
+  webapp:
+    build: .
+    container_name: webapp
+    ports:
+      - "8080:8080"
+    networks:
+      - net1
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=EventBookingSystem;User Id=sa;Password=@123Belal123;TrustServerCertificate=true
+      - ApplicationSettings__BaseUrl=http://localhost:8080
+      - AdminSeed__Email=admin@example.com
+      - AdminSeed__Password=AdminPassword123
+      - Stripe__SecretKey=${STRIPE_SECRET_KEY}
+      - Stripe__PublishableKey=${STRIPE_PUBLISHABLE_KEY}
+      - Stripe__WebhookSecret=${STRIPE_WEBHOOK_SECRET}
+      - MailSettings__Email=${MAIL_SETTINGS_EMAIL}
+      - MailSettings__DisplayName=${MAIL_SETTINGS_DISPLAY_NAME}
+      - MailSettings__Password=${MAIL_SETTINGS_PASSWORD}
+      - MailSettings__Host=${MAIL_SETTINGS_HOST}
+      - MailSettings__Port=${MAIL_SETTINGS_PORT}
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2025-latest
+    container_name: db
+    networks:
+      - net1
+    hostname: sqlserver
+    volumes:
+      - sqldata:/var/opt/mssql
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=@123Belal123
+      - MSSQL_PID=Express
+    healthcheck:
+      test:
+        ["CMD-SHELL", "timeout 1s bash -c '</dev/tcp/127.0.0.1/1433' || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+# Networks
+networks:
+  net1:
+
+# Volumes
+volumes:
+  sqldata:
